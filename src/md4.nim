@@ -124,7 +124,7 @@ proc process_block(ctx: var MD4_CTX) =
     ctx.state[2] += c
     ctx.state[3] += d
 
-proc Update*(ctx: var MD4_CTX, data: seq[byte]) =
+proc Update*(ctx: var MD4_CTX, data: openArray[byte]) =
     ## Hash some raw data.
     var inputlen = len(data)
     var inputoff = 0
@@ -153,11 +153,21 @@ proc Update*(ctx: var MD4_CTX, data: seq[byte]) =
         inputoff += copysize
         inputlen -= copysize
 
-proc Update*(ctx: var MD4_CTX, data: string) =
-    ## Hash some data, treating the string as raw bytes.
-    var inputbytes = newSeq[byte](0)
-    insert(inputbytes, toOpenArrayByte(data, 0, len(data)-1), 0)
-    ctx.Update(inputbytes)
+proc Update*(ctx: var MD4_CTX, data: seq[byte]) {.inline.} =
+    ## Hash some raw data.
+    ctx.Update(data.toOpenArray(0, len(data)-1))
+
+proc Update*(ctx: var MD4_CTX, data: openArray[char]) {.inline.} =
+    ## Hash some raw data.
+    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
+
+proc Update*(ctx: var MD4_CTX, data: seq[char]) {.inline.} =
+    ## Hash some raw data.
+    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
+
+proc Update*(ctx: var MD4_CTX, data: string) {.inline.} =
+    ## Interptet a string as bytes and hash it.
+    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
 
 proc Final*(ctx: var MD4_CTX): array[16, byte] =
     ## Generate the final output.  Only call this once.
