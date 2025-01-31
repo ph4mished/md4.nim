@@ -26,8 +26,6 @@ assert ctx.buffered_bytes == 0
 assert ctx.processed_blocks == 1
 for i in 0..63:
   assert ctx.buffer[i] == byte(i+1)
-# TODO: test larger input buffers (several multiples of the blocksize)
-# hash a 10KB file using different chunk sizes (1..300?), make sure the outputs are consistent
 
 # test cases from RFC 1320 section A.5
 let testcases: seq[tuple[input: string, hexoutput: string]] = @[
