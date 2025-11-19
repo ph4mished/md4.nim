@@ -13,9 +13,9 @@
 ## * This library makes no attempt to protect your data against side-channel attacks, or anything else, really.
 
 runnableExamples:
-    var ctx = NewMD4()
-    ctx.Update("message digest")
-    let result = ctx.Final()
+    var ctx = newMD4()
+    ctx.update("message digest")
+    let result = ctx.final()
 
     import std/[sequtils, strutils]
     let hexstr = map(result, proc(x: byte): string = toHex(x)).join
@@ -33,7 +33,7 @@ type MD4_CTX = tuple
     buffered_bytes: int
     processed_blocks: int
 
-proc NewMD4*(): MD4_CTX =
+proc newMD4*(): MD4_CTX =
     ## Initialize a new MD4 context.
     result.state = [
         0x67452301'u32,
@@ -124,7 +124,7 @@ proc process_block(ctx: var MD4_CTX) =
     ctx.state[2] += c
     ctx.state[3] += d
 
-proc Update*(ctx: var MD4_CTX, data: openArray[byte]) =
+proc update*(ctx: var MD4_CTX, data: openArray[byte]) =
     ## Hash some raw data.
     var inputlen = len(data)
     var inputoff = 0
@@ -153,23 +153,23 @@ proc Update*(ctx: var MD4_CTX, data: openArray[byte]) =
         inputoff += copysize
         inputlen -= copysize
 
-proc Update*(ctx: var MD4_CTX, data: seq[byte]) {.inline.} =
+proc update*(ctx: var MD4_CTX, data: seq[byte]) {.inline.} =
     ## Hash some raw data.
-    ctx.Update(data.toOpenArray(0, len(data)-1))
+    ctx.update(data.toOpenArray(0, len(data)-1))
 
-proc Update*(ctx: var MD4_CTX, data: openArray[char]) {.inline.} =
+proc update*(ctx: var MD4_CTX, data: openArray[char]) {.inline.} =
     ## Hash some raw data.
-    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
+    ctx.update(data.toOpenArrayByte(0, len(data)-1))
 
-proc Update*(ctx: var MD4_CTX, data: seq[char]) {.inline.} =
+proc update*(ctx: var MD4_CTX, data: seq[char]) {.inline.} =
     ## Hash some raw data.
-    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
+    ctx.update(data.toOpenArrayByte(0, len(data)-1))
 
-proc Update*(ctx: var MD4_CTX, data: string) {.inline.} =
+proc update*(ctx: var MD4_CTX, data: string) {.inline.} =
     ## Interptet a string as bytes and hash it.
-    ctx.Update(data.toOpenArrayByte(0, len(data)-1))
+    ctx.update(data.toOpenArrayByte(0, len(data)-1))
 
-proc Final*(ctx: var MD4_CTX): array[16, byte] =
+proc final*(ctx: var MD4_CTX): array[16, byte] =
     ## Generate the final output.  Only call this once.
     let bitcount = (ctx.buffered_bytes + (ctx.processed_blocks * bufsize)) shl 3
 
@@ -178,8 +178,8 @@ proc Final*(ctx: var MD4_CTX): array[16, byte] =
         55 - ctx.buffered_bytes
     else:
         119 - ctx.buffered_bytes
-    ctx.Update(@[0x80'u8])
-    ctx.Update(repeat(0x0'u8, padding))
+    ctx.update(@[0x80'u8])
+    ctx.update(repeat(0x0'u8, padding))
 
     # add bit counts
     var counts: array[2, uint32]
@@ -188,6 +188,6 @@ proc Final*(ctx: var MD4_CTX): array[16, byte] =
     counts[1] = uint32(bitcount shr 32)
     var countbytes: seq[byte] = @[0, 0, 0, 0, 0, 0, 0, 0]
     unpack_le32(countbytes, counts)
-    ctx.Update(countbytes)
+    ctx.update(countbytes)
 
     unpack_le32(result, ctx.state)

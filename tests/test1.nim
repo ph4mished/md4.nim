@@ -3,7 +3,7 @@ import std/[sequtils, strutils, unittest]
 include md4
 
 # check initial state
-var ctx = NewMD4()
+var ctx = newMD4()
 assert ctx.state == [
     0x67452301'u32,
     0xefcdab89'u32,
@@ -16,12 +16,12 @@ assert ctx.processed_blocks == 0
 # check ctx.Update()'s buffer handling
 for i in 0..14:
   assert ctx.buffered_bytes == i * 4
-  ctx.Update(@[byte(i*4+1), byte(i*4+2), byte(i*4+3), byte(i*4+4)])
+  ctx.update(@[byte(i*4+1), byte(i*4+2), byte(i*4+3), byte(i*4+4)])
   assert ctx.buffered_bytes == (i+1) * 4
-ctx.Update(@[byte(61), byte(62), byte(63)])
+ctx.update(@[byte(61), byte(62), byte(63)])
 assert ctx.buffered_bytes == 63
 assert ctx.processed_blocks == 0
-ctx.Update(@[byte(64)])
+ctx.update(@[byte(64)])
 assert ctx.buffered_bytes == 0
 assert ctx.processed_blocks == 1
 for i in 0..63:
@@ -40,12 +40,12 @@ let testcases: seq[tuple[input: string, hexoutput: string]] = @[
 
 for testcase in testcases:
   # echo fmt"starting new test case: input is {testcase.input}, length is {len(testcase.input)}, hexoutput is {testcase.hexoutput}"
-  var ctx = NewMD4()
+  var ctx = newMD4()
   # copy input string into byte seq
   var inputbytes = newSeq[byte](0)
   insert(inputbytes, toOpenArrayByte(testcase.input, 0, len(testcase.input)-1), 0)
-  ctx.Update(inputbytes)
-  let result_array = ctx.Final()
+  ctx.update(inputbytes)
+  let result_array = ctx.final()
   let result_hexstr = map(result_array, proc(x: byte): string = toLowerAscii(toHex(x))).join
 
   check(testcase.hexoutput == result_hexstr)

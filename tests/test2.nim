@@ -6,15 +6,15 @@ const inputsize = 2000
 const maxwrite = 300
 # check buffer handling for various write sizes
 let buffer = urandom(inputsize)
-var ctx = NewMD4()
-ctx.Update(buffer)
-let expected = ctx.Final()
+var ctx = newMD4()
+ctx.update(buffer)
+let expected = ctx.final()
 for writesize in 1..maxwrite:
-    ctx = NewMD4()
+    ctx = newMD4()
     var firstbyte = 0
     while firstbyte < inputsize:
         let lastbyte = min(firstbyte + writesize, inputsize) - 1
-        ctx.Update(buffer[firstbyte..lastbyte])
+        ctx.update(buffer[firstbyte..lastbyte])
         firstbyte = lastbyte + 1
-    let got = ctx.Final()
+    let got = ctx.final()
     check(expected == got)
